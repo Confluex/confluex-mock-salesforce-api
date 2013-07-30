@@ -1,0 +1,9 @@
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <env:Body>
+        <m:login xmlns:m="urn:partner.soap.sforce.com" xmlns:sobj="urn:sobject.partner.soap.sforce.com">
+            <m:username></m:username>
+            <m:password></m:password>
+        </m:login>
+    </env:Body>
+</env:Envelope>

@@ -41,8 +41,8 @@ class LoginFunctionalTest {
     @Test
     void shouldAcceptAnyLoginCredentialsByDefault() {
         def root = new XmlSlurper().parse(new ClassPathResource('login-request.xml').inputStream)
-        root.Body.login.username = 'trafacz@confluex.com.prospectmtg.dev'
-        root.Body.login.password = 'wioska123qH3KrpON7OsB6MKOTdPWv711T'
+        root.Body.login.username = 'arbitrary@confluex.com'
+        root.Body.login.password = 'yrartibraAPIKEY'
         String request = new StreamingMarkupBuilder().bind { mkp.yield root }
 
         ClientResponse response = sslClient.resource('https://localhost:8090/services/Soap/u/28.0')

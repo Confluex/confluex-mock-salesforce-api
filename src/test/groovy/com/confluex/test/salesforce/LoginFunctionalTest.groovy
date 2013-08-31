@@ -16,27 +16,7 @@ import javax.ws.rs.core.MediaType
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPathFactory
 
-class LoginFunctionalTest {
-
-    MockSalesforceApiServer server
-    Client sslClient
-
-    @Before
-    void initServer() {
-        server = new MockSalesforceApiServer(8090)
-    }
-
-    @After
-    void stopServer() {
-        server.stop()
-    }
-
-    @Before
-    void initClient() {
-        ClientConfig config = new DefaultClientConfig()
-        config.properties.put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(null, MockHttpsServer.clientSslContext))
-        sslClient = Client.create(config)
-    }
+class LoginFunctionalTest extends AbstractFunctionalTest {
 
     @Test
     void shouldAcceptAnyLoginCredentialsByDefault() {

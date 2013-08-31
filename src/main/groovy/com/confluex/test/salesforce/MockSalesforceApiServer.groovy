@@ -1,6 +1,8 @@
 package com.confluex.test.salesforce
 
 import com.confluex.mule.test.http.MockHttpsServer
+import groovy.json.JsonBuilder
+import groovy.json.JsonSlurper
 import groovy.xml.StreamingMarkupBuilder
 import org.springframework.core.io.ClassPathResource
 
@@ -18,6 +20,7 @@ class MockSalesforceApiServer {
     MockSalesforceApiServer(int port) {
         httpsServer = new MockHttpsServer(port)
         loginDefaults()
+        streamingApiDefaults()
     }
 
     void loginDefaults() {
@@ -35,6 +38,15 @@ class MockSalesforceApiServer {
         ).withBody(xml)
     }
 
+    void streamingApiDefaults() {
+        httpsServer.respondTo(path('/cometd/26.0')).withBody { request ->
+            def message = new JsonSlurper().parseText(request.body)
+            message.successful = true
+            message.clientId = '111111111111111111111111111'
+            makeJson(message)
+        }
+    }
+
     void stop() {
         httpsServer.stop()
     }
@@ -43,5 +55,9 @@ class MockSalesforceApiServer {
         def root = new XmlSlurper().parse(new ClassPathResource(path).inputStream)
         editClosure(root)
         new StreamingMarkupBuilder().bind { mkp.yield root }
+    }
+
+    String makeJson(map) {
+        new JsonBuilder(map).toString()
     }
 }

@@ -1,5 +1,6 @@
 package com.confluex.test.salesforce
 
+import com.confluex.mule.test.http.ClientRequest
 import com.confluex.mule.test.http.MockHttpsServer
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
@@ -40,15 +41,25 @@ class MockSalesforceApiServer {
 
     void streamingApiDefaults() {
         httpsServer.respondTo(path('/cometd/26.0')).withBody { request ->
-            def message = new JsonSlurper().parseText(request.body)
-            message.successful = true
-            message.clientId = '111111111111111111111111111'
-            makeJson(message)
+            getStreamingResponse(request)
         }
     }
 
     void stop() {
         httpsServer.stop()
+    }
+
+    String getStreamingResponse(ClientRequest request) {
+        def message = new JsonSlurper().parseText(request.body)
+        message.successful = true
+        [
+                '/meta/handshake': {
+                        message.clientId = '111111111111111111111111111'
+                },
+                '/meta/connect': {
+                }
+        ].get(message.channel).call()
+        makeJson(message)
     }
 
     String slurpAndEditXml(String path, Closure editClosure) {

@@ -8,6 +8,9 @@ import com.sun.jersey.client.urlconnection.HTTPSProperties
 import org.junit.After
 import org.junit.Before
 
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.xpath.XPathFactory
+
 class AbstractFunctionalTest {
     protected MockSalesforceApiServer server
     protected Client sslClient
@@ -27,5 +30,13 @@ class AbstractFunctionalTest {
         ClientConfig config = new DefaultClientConfig()
         config.properties.put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(null, MockHttpsServer.clientSslContext))
         sslClient = Client.create(config)
+    }
+
+    def evalXpath(String xpath, String xml) {
+        def evaluator = XPathFactory.newInstance().newXPath()
+        def builder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+        def rootElement = builder.parse(new ByteArrayInputStream(xml.bytes)).documentElement
+
+        evaluator.evaluate(xpath, rootElement)
     }
 }

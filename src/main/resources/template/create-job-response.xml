@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jobInfo
+        xmlns="http://www.force.com/2009/06/asyncapi/dataload">
+    <id></id>
+    <operation></operation>
+    <object></object>
+    <createdById></createdById>
+    <createdDate></createdDate>
+    <systemModstamp></systemModstamp>
+    <state>Open</state>
+    <externalIdFieldName></externalIdFieldName>
+    <concurrencyMode>Parallel</concurrencyMode>
+    <contentType>XML</contentType>
+    <numberBatchesQueued>0</numberBatchesQueued>
+    <numberBatchesInProgress>0</numberBatchesInProgress>
+    <numberBatchesCompleted>0</numberBatchesCompleted>
+    <numberBatchesFailed>0</numberBatchesFailed>
+    <numberBatchesTotal>0</numberBatchesTotal>
+    <numberRecordsProcessed>0</numberRecordsProcessed>
+    <numberRetries>0</numberRetries>
+    <apiVersion>26.0</apiVersion>
+    <numberRecordsFailed>0</numberRecordsFailed>
+    <totalProcessingTime>0</totalProcessingTime>
+    <apiActiveProcessingTime>0</apiActiveProcessingTime>
+    <apexProcessingTime>0</apexProcessingTime>
+</jobInfo>

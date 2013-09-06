@@ -8,6 +8,7 @@ import groovy.xml.StreamingMarkupBuilder
 import org.springframework.core.io.ClassPathResource
 
 import static com.confluex.mule.test.http.matchers.HttpMatchers.*
+import static org.hamcrest.Matchers.*
 
 class MockSalesforceApiServer {
     static final String DEFAULT_ORG_ID = '00MOCK000000org'
@@ -16,12 +17,19 @@ class MockSalesforceApiServer {
     static final String METADATA_PATH_PREFIX = '/services/Soap/m/28.0/'
     static final String PATH_PREFIX = '/services/Soap/u/28.0/'
 
-    MockHttpsServer httpsServer
+    private MockHttpsServer httpsServer
+    private MockAsyncApi asyncApi
 
     MockSalesforceApiServer(int port) {
         httpsServer = new MockHttpsServer(port)
+        asyncApi = new MockAsyncApi(httpsServer)
         loginDefaults()
+        asyncApiDefaults()
         streamingApiDefaults()
+    }
+
+    MockAsyncApi asyncApi() {
+        asyncApi
     }
 
     void loginDefaults() {
@@ -34,9 +42,48 @@ class MockSalesforceApiServer {
             root.Body.loginResponse.result.sessionId = DEFAULT_SESSION_ID
         }
         httpsServer.respondTo(path('/services/Soap/u/28.0')
-                .and(header('SOAPAction', 'login'))
-                .and(header('Content-Type', 'text/xml'))
+                .and(header('Content-Type', startsWith('text/xml')))
         ).withBody(xml)
+    }
+
+    void asyncApiDefaults() {
+        def batchResultPathPattern = '/services/async/26\\.0/job/\\w+/batch/(\\w+)/result'
+        httpsServer.respondTo(path(matchesPattern(batchResultPathPattern))).withStatus(200).withBody { request ->
+            def batchId = (request.path =~ batchResultPathPattern )[0][1]
+            slurpAndEditXml('/template/batch-result-response.xml') { root ->
+                root.result.id = batchId
+                root.result.success = 'true'
+            }
+        }
+//        httpsServer.respondTo(path(matchesPattern(batchResultPathPattern))).withStatus(400).withBody { request ->
+//            def batchId = (request.path =~ batchResultPathPattern )[0][1]
+//            slurpAndEditXml('/template/error-response.xml') { root ->
+//                root.exceptionCode = 'InvalidBatch'
+//                root.exceptionMessage = "Unable to find batch for id: $batchId"
+//            }
+//        }
+
+        def batchPathPattern = '/services/async/26\\.0/job/(\\w+)/batch'
+        httpsServer.respondTo(path(matchesPattern(batchPathPattern))).withStatus(201).withBody { request ->
+            def jobId = (request.path =~ batchPathPattern)[0][1]
+            slurpAndEditXml('/template/create-batch-response.xml') { root ->
+                root.id = '00MOCK0000batch'
+                root.jobId = jobId
+                root.createdDate = formatDate(new Date())
+                root.systemModstamp = formatDate(new Date())
+            }
+        }
+        httpsServer.respondTo(path('/services/async/26.0/job/')).withStatus(201).withBody { request ->
+            def requestXml = new XmlSlurper().parseText(request.body)
+            slurpAndEditXml('/template/create-job-response.xml') { root ->
+                root.id = '00MOCK000000job'
+                root.operation = requestXml.operation.text()
+                root.object = requestXml.object.text()
+                root.externalIdFieldName = requestXml.externalIdFieldName.text()
+                root.createdDate = formatDate(new Date())
+                root.systemModstamp = formatDate(new Date())
+            }
+        }
     }
 
     void streamingApiDefaults() {
@@ -63,12 +110,23 @@ class MockSalesforceApiServer {
     }
 
     String slurpAndEditXml(String path, Closure editClosure) {
-        def root = new XmlSlurper().parse(new ClassPathResource(path).inputStream)
+        slurpAndEditXml(new ClassPathResource(path).inputStream, editClosure)
+    }
+
+    String slurpAndEditXml(InputStream xml, Closure editClosure) {
+        def root = new XmlSlurper().parse(xml)
         editClosure(root)
-        new StreamingMarkupBuilder().bind { mkp.yield root }
+        new StreamingMarkupBuilder().bind {
+            mkp.declareNamespace("": root.namespaceURI())
+            mkp.yield root
+        }
     }
 
     String makeJson(map) {
         new JsonBuilder(map).toString()
+    }
+
+    String formatDate(Date date) {
+        date.format("yyyy-MM-dd'T'HH:mm:ss'Z'")
     }
 }

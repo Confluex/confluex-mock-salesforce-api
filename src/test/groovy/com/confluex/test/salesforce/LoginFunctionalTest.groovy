@@ -26,12 +26,11 @@ class LoginFunctionalTest extends AbstractFunctionalTest {
         String request = new StreamingMarkupBuilder().bind { mkp.yield root }
 
         ClientResponse response = sslClient.resource('https://localhost:8090/services/Soap/u/28.0')
-            .header('SOAPAction', 'login')
-            .entity(request, MediaType.TEXT_XML_TYPE)
+            .entity(request, 'text/xml; charset=UTF-8')
             .post(ClientResponse.class)
 
         def responseBody = response.getEntity(String)
-        println responseBody
+
         assert response.status == 200
         assert MockSalesforceApiServer.DEFAULT_USER_ID == evalXpath('/Envelope/Body/loginResponse/result/userId', responseBody)
         assert MockSalesforceApiServer.DEFAULT_USER_ID == evalXpath('/Envelope/Body/loginResponse/result/userInfo/userId', responseBody)
@@ -49,13 +48,5 @@ class LoginFunctionalTest extends AbstractFunctionalTest {
         assert 8090 == serverUrl.port
         assert serverUrl.path ==~ /${MockSalesforceApiServer.PATH_PREFIX}.*/
         assert serverUrl.path ==~ /.*${MockSalesforceApiServer.DEFAULT_ORG_ID}/
-    }
-
-    def evalXpath(String xpath, String xml) {
-        def evaluator = XPathFactory.newInstance().newXPath()
-        def builder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-        def rootElement = builder.parse(new ByteArrayInputStream(xml.bytes)).documentElement
-
-        evaluator.evaluate(xpath, rootElement)
     }
 }

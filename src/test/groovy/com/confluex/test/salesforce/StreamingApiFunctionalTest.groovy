@@ -79,5 +79,6 @@ class StreamingApiFunctionalTest extends AbstractFunctionalTest {
     @Test
     void shouldReplyWithSameClientId_toConnect() {
         assert connectRequest.clientId == requestBayeux(connectRequest).clientId
+
     }
 }

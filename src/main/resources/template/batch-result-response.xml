@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<results xmlns="http://www.force.com/2009/06/asyncapi/dataload">
+    <result>
+        <id></id>
+        <success>true</success>
+        <created>false</created>
+    </result>
+</results>

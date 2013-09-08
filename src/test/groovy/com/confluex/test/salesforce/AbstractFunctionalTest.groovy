@@ -1,6 +1,6 @@
 package com.confluex.test.salesforce
 
-import com.confluex.mule.test.http.MockHttpsServer
+import com.confluex.mock.http.MockHttpsServer
 import com.sun.jersey.api.client.Client
 import com.sun.jersey.api.client.config.ClientConfig
 import com.sun.jersey.api.client.config.DefaultClientConfig

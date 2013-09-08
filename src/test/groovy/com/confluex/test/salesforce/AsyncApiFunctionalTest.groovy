@@ -27,7 +27,7 @@ class AsyncApiFunctionalTest extends AbstractFunctionalTest {
         ClientResponse response = sslClient.resource('https://localhost:8090/services/async/26.0/job/')
                 .entity(writer.toString(), 'text/xml; charset=UTF-8')
                 .post(ClientResponse.class)
-        assert 201 == response.getStatus()
+        assert 201 == response.status
         String responseBody = response.getEntity(String)
         log.debug responseBody
 
@@ -53,7 +53,7 @@ class AsyncApiFunctionalTest extends AbstractFunctionalTest {
         ClientResponse response = sslClient.resource('https://localhost:8090/services/async/26.0/job/JOB001/batch')
                 .entity(writer.toString(), 'text/xml; charset=UTF-8')
                 .post(ClientResponse.class)
-        assert 201 == response.getStatus()
+        assert 201 == response.status
         String responseBody = response.getEntity(String)
         log.debug responseBody
 
@@ -71,7 +71,7 @@ class AsyncApiFunctionalTest extends AbstractFunctionalTest {
         String responseBody = response.getEntity(String)
         log.debug responseBody
 
-        assert 200 == response.getStatus()
+        assert 200 == response.status
         assert 'ARBITRARYBATCH' == evalXpath('/results/result/id', responseBody)
         assert 'true' == evalXpath('/results/result/success', responseBody)
     }
@@ -84,7 +84,7 @@ class AsyncApiFunctionalTest extends AbstractFunctionalTest {
         String responseBody = response.getEntity(String)
         log.debug responseBody
 
-        assert 400 == response.getStatus()
+        assert 400 == response.status
         assert 'InvalidBatch' == evalXpath('/error/exceptionCode', responseBody)
         assert 'Unable to find batch for id: IMAGINARYBATCH' == evalXpath('/error/exceptionMessage', responseBody)
     }
@@ -98,8 +98,16 @@ class AsyncApiFunctionalTest extends AbstractFunctionalTest {
         String responseBody = response.getEntity(String)
         log.debug responseBody
 
-        assert 400 == response.getStatus()
+        assert 400 == response.status
         assert 'InvalidBatch' == evalXpath('/error/exceptionCode', responseBody)
         assert 'Batch not completed' == evalXpath('/error/exceptionMessage', responseBody)
+    }
+
+    @Test
+    public void checkBatchStatusHonorsIdMatch() {
+        def batchResource = sslClient.resource('https://localhost:8090/services/async/26.0/job/JOB001/batch')
+        server.asyncApi().batchResult().forId("INCOMPLETEBATCH").respondIncomplete();
+        assert 400 == batchResource.path('INCOMPLETEBATCH/result').get(ClientResponse.class).status
+        assert 200 == batchResource.path('SOMEOTHERBATCH/result').get(ClientResponse.class).status
     }
 }

@@ -1,6 +1,7 @@
 package com.confluex.test.salesforce
 
-import com.confluex.mule.test.http.MockHttpsServer
+import com.confluex.mock.http.MockHttpsServer
+
 
 class MockAsyncApi {
     MockHttpsServer mockHttpsServer
@@ -10,8 +11,6 @@ class MockAsyncApi {
     }
 
     MockBatchResultBuilder batchResult() {
-        def batchResult = new MockBatchResultBuilder()
-        // match batch result request
-        batchResult
+        new MockBatchResultBuilder(mockHttpsServer)
     }
 }

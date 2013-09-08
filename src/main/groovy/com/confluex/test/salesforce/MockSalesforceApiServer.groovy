@@ -1,13 +1,13 @@
 package com.confluex.test.salesforce
 
-import com.confluex.mule.test.http.ClientRequest
-import com.confluex.mule.test.http.MockHttpsServer
+import com.confluex.mock.http.ClientRequest
+import com.confluex.mock.http.MockHttpsServer
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovy.xml.StreamingMarkupBuilder
 import org.springframework.core.io.ClassPathResource
 
-import static com.confluex.mule.test.http.matchers.HttpMatchers.*
+import static com.confluex.mock.http.matchers.HttpMatchers.*
 import static org.hamcrest.Matchers.*
 
 class MockSalesforceApiServer {
@@ -55,13 +55,6 @@ class MockSalesforceApiServer {
                 root.result.success = 'true'
             }
         }
-//        httpsServer.respondTo(path(matchesPattern(batchResultPathPattern))).withStatus(400).withBody { request ->
-//            def batchId = (request.path =~ batchResultPathPattern )[0][1]
-//            slurpAndEditXml('/template/error-response.xml') { root ->
-//                root.exceptionCode = 'InvalidBatch'
-//                root.exceptionMessage = "Unable to find batch for id: $batchId"
-//            }
-//        }
 
         def batchPathPattern = '/services/async/26\\.0/job/(\\w+)/batch'
         httpsServer.respondTo(path(matchesPattern(batchPathPattern))).withStatus(201).withBody { request ->

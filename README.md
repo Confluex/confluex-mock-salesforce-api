@@ -12,4 +12,3 @@ This will start a server on localhost that tries to respond reasonably by defaul
 MockSalesforceApiServer mockServer = new MockSalesforceApiServer(443)
 
 ```
-

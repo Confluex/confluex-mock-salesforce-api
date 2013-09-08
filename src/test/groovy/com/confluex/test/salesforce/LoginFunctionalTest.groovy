@@ -1,20 +1,9 @@
 package com.confluex.test.salesforce
 
-import com.confluex.mule.test.http.MockHttpsServer
-import com.sun.jersey.api.client.Client
 import com.sun.jersey.api.client.ClientResponse
-import com.sun.jersey.api.client.config.ClientConfig
-import com.sun.jersey.api.client.config.DefaultClientConfig
-import com.sun.jersey.client.urlconnection.HTTPSProperties
 import groovy.xml.StreamingMarkupBuilder
-import org.junit.After
-import org.junit.Before
 import org.junit.Test
 import org.springframework.core.io.ClassPathResource
-
-import javax.ws.rs.core.MediaType
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.xpath.XPathFactory
 
 class LoginFunctionalTest extends AbstractFunctionalTest {
 

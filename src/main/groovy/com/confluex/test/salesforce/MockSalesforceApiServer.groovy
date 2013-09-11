@@ -47,14 +47,7 @@ class MockSalesforceApiServer {
     }
 
     void asyncApiDefaults() {
-        def batchResultPathPattern = '/services/async/26\\.0/job/\\w+/batch/(\\w+)/result'
-        httpsServer.respondTo(path(matchesPattern(batchResultPathPattern))).withStatus(200).withBody { request ->
-            def batchId = (request.path =~ batchResultPathPattern )[0][1]
-            slurpAndEditXml('/template/batch-result-response.xml') { root ->
-                root.result.id = batchId
-                root.result.success = 'true'
-            }
-        }
+        asyncApi().batchResult().respondSuccess()
 
         def batchPathPattern = '/services/async/26\\.0/job/(\\w+)/batch'
         httpsServer.respondTo(path(matchesPattern(batchPathPattern))).withStatus(201).withBody { request ->

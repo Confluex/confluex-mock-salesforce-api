@@ -30,6 +30,17 @@ class MockBatchResultBuilder {
         this
     }
 
+    MockBatchResultResponse respondSuccess() {
+        mockHttpsServer.respondTo(path(pathMatcher)).withStatus(200).withBody { request ->
+            def batchId = (request.path =~ batchResultPathPattern )[0][1]
+            slurpAndEditXml('/template/batch-result-response.xml') { root ->
+                root.result.id = batchId
+                root.result.success = 'true'
+            }
+        }
+        new MockBatchResultResponse()
+    }
+
     MockBatchResultResponse respondInvalid() {
         mockHttpsServer.respondTo(path(pathMatcher)).withStatus(400).withBody { request ->
             def batchId = (request.path =~ batchResultPathPattern )[0][1]

@@ -19,17 +19,24 @@ class MockSalesforceApiServer {
 
     private MockHttpsServer httpsServer
     private MockAsyncApi asyncApi
+    private MockSforceApi sforceApi
 
     MockSalesforceApiServer(int port) {
         httpsServer = new MockHttpsServer(port)
         asyncApi = new MockAsyncApi(httpsServer)
+        sforceApi = new MockSforceApi(httpsServer)
         loginDefaults()
+        sforceApiDefaults()
         asyncApiDefaults()
         streamingApiDefaults()
     }
 
     MockAsyncApi asyncApi() {
         asyncApi
+    }
+
+    MockSforceApi sforceApi() {
+        sforceApi
     }
 
     void loginDefaults() {
@@ -44,6 +51,10 @@ class MockSalesforceApiServer {
         httpsServer.respondTo(path('/services/Soap/u/28.0')
                 .and(header('Content-Type', startsWith('text/xml')))
         ).withBody(xml)
+    }
+
+    void sforceApiDefaults() {
+        sforceApi().retrieve().returnObject()
     }
 
     void asyncApiDefaults() {

@@ -6,6 +6,15 @@ import groovy.xml.StreamingMarkupBuilder
 import org.springframework.core.io.ClassPathResource
 
 class BaseBuilder {
+    static final Map<String, String> NAMESPACES = [
+            env: 'http://schemas.xmlsoap.org/soap/envelope/',
+            xsd: 'http://www.w3.org/2001/XMLSchema',
+            xsi: 'http://www.w3.org/2001/XMLSchema-instance',
+            sf: 'urn:partner.soap.sforce.com',
+            so: 'urn:sobject.partner.soap.sforce.com',
+            sd: 'http://www.force.com/2009/06/asyncapi/dataload'
+    ]
+
     MockHttpsServer mockHttpsServer
 
     BaseBuilder(MockHttpsServer mockHttpsServer) {
@@ -23,9 +32,17 @@ class BaseBuilder {
     String slurpAndEditXml(InputStream xml, Closure editClosure) {
         def root = new XmlSlurper().parse(xml)
         editClosure(root)
-        new StreamingMarkupBuilder().bind {
-            mkp.declareNamespace("": root.namespaceURI())
+        buildXml {
             mkp.yield root
         }
     }
+
+   String buildXml(Closure editClosure) {
+       new StreamingMarkupBuilder().bind {
+           NAMESPACES.each {
+               mkp.declareNamespace it.key, it.value
+           }
+           mkp.yield editClosure
+       }
+   }
 }

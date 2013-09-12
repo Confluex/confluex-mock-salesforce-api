@@ -21,18 +21,17 @@ class LoginFunctionalTest extends AbstractFunctionalTest {
         def responseBody = response.getEntity(String)
 
         assert response.status == 200
-        assert MockSalesforceApiServer.DEFAULT_USER_ID == evalXpath('/Envelope/Body/loginResponse/result/userId', responseBody)
-        assert MockSalesforceApiServer.DEFAULT_USER_ID == evalXpath('/Envelope/Body/loginResponse/result/userInfo/userId', responseBody)
-        assert MockSalesforceApiServer.DEFAULT_ORG_ID + 'MAC' == evalXpath('/Envelope/Body/loginResponse/result/userInfo/organizationId', responseBody)
-        assert MockSalesforceApiServer.DEFAULT_SESSION_ID == evalXpath('/Envelope/Body/loginResponse/result/sessionId', responseBody)
+        assert MockSalesforceApiServer.DEFAULT_USER_ID == evalXpath('/env:Envelope/env:Body/sf:loginResponse/sf:result/sf:userId', responseBody)
+        assert MockSalesforceApiServer.DEFAULT_ORG_ID + 'MAC' == evalXpath('/env:Envelope/env:Body/sf:loginResponse/sf:result/sf:userInfo/sf:organizationId', responseBody)
+        assert MockSalesforceApiServer.DEFAULT_SESSION_ID == evalXpath('/env:Envelope/env:Body/sf:loginResponse/sf:result/sf:sessionId', responseBody)
 
-        URL metadataUrl = new URL(evalXpath('/Envelope/Body/loginResponse/result/metadataServerUrl', responseBody))
+        URL metadataUrl = new URL(evalXpath('/env:Envelope/env:Body/sf:loginResponse/sf:result/sf:metadataServerUrl', responseBody))
         assert 'localhost' == metadataUrl.host
         assert 8090 == metadataUrl.port
         assert metadataUrl.path ==~ /${MockSalesforceApiServer.METADATA_PATH_PREFIX}.*/
         assert metadataUrl.path ==~ /.*${MockSalesforceApiServer.DEFAULT_ORG_ID}/
 
-        URL serverUrl = new URL(evalXpath('/Envelope/Body/loginResponse/result/serverUrl', responseBody))
+        URL serverUrl = new URL(evalXpath('//env:Envelope/env:Body/sf:loginResponse/sf:result/sf:serverUrl', responseBody))
         assert 'localhost' == serverUrl.host
         assert 8090 == serverUrl.port
         assert serverUrl.path ==~ /${MockSalesforceApiServer.PATH_PREFIX}.*/

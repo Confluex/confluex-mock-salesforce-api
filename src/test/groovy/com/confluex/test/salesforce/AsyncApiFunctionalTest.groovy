@@ -4,10 +4,20 @@ import com.sun.jersey.api.client.ClientResponse
 import groovy.time.TimeCategory
 import groovy.util.logging.Slf4j
 import groovy.xml.MarkupBuilder
+import org.junit.Before
 import org.junit.Test
+
+import javax.xml.parsers.DocumentBuilderFactory
 
 @Slf4j
 class AsyncApiFunctionalTest extends AbstractFunctionalTest {
+
+    @Before
+    void disableXmlNamespaces() {
+        def factory = DocumentBuilderFactory.newInstance()
+        factory.namespaceAware = false
+        builder = factory.newDocumentBuilder()
+    }
 
     @Test
     public void createJobShouldReplyWithJobInfo() {

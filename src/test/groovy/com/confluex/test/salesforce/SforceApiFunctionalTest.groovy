@@ -28,14 +28,14 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
 
         def responseBody = response.getEntity(String)
         log.debug("retrieve response: $responseBody")
-        assert 2 == evalXpath('/Envelope/Body/retrieveResponse/result', responseBody, XPathConstants.NODESET).length
-        assert '000000000000001' == evalXpath('/Envelope/Body/retrieveResponse/result[1]/Id', responseBody)
-        assert '000000000000002' == evalXpath('/Envelope/Body/retrieveResponse/result[2]/Id', responseBody)
+        assert 2 == evalXpath('/env:Envelope/env:Body/sf:retrieveResponse/sf:result', responseBody, XPathConstants.NODESET).length
+        assert '000000000000001' == evalXpath('/env:Envelope/env:Body/sf:retrieveResponse/sf:result[1]/so:Id', responseBody)
+        assert '000000000000002' == evalXpath('/env:Envelope/env:Body/sf:retrieveResponse/sf:result[2]/so:Id', responseBody)
         ['1', '2'].each { index ->
-            assert 'Contact' == evalXpath("/Envelope/Body/retrieveResponse/result[$index]/type", responseBody)
-            assert 'true' == evalXpath("/Envelope/Body/retrieveResponse/result[$index]/FirstName/@nil", responseBody)
-            assert 'true' == evalXpath("/Envelope/Body/retrieveResponse/result[$index]/LastName/@nil", responseBody)
-            assert 'true' == evalXpath("/Envelope/Body/retrieveResponse/result[$index]/Email/@nil", responseBody)
+            assert 'Contact' == evalXpath("/env:Envelope/env:Body/sf:retrieveResponse/sf:result[$index]/so:type", responseBody)
+            assert 'true' == evalXpath("/env:Envelope/env:Body/sf:retrieveResponse/sf:result[$index]/so:FirstName/@xsi:nil", responseBody)
+            assert 'true' == evalXpath("/env:Envelope/env:Body/sf:retrieveResponse/sf:result[$index]/so:LastName/@xsi:nil", responseBody)
+            assert 'true' == evalXpath("/env:Envelope/env:Body/sf:retrieveResponse/sf:result[$index]/so:Email/@xsi:nil", responseBody)
         }
     }
 }

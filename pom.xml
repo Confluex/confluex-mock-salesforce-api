@@ -199,7 +199,7 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.9</version>
+                <version>4.11</version>
                 <!-- promoted scope due to src/main classes which use assertion failures -->
                 <scope>compile</scope>
                 <optional>true</optional>

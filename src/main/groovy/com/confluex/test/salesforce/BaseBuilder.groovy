@@ -45,4 +45,12 @@ class BaseBuilder {
            mkp.yield editClosure
        }
    }
+
+    String buildSoapEnvelope(Closure editClosure) {
+        buildXml {
+            'env:Envelope'(NAMESPACES.collectEntries {key, value -> ["xmlns:$key", value]}) {
+                mkp.yield editClosure
+            }
+        }
+    }
 }

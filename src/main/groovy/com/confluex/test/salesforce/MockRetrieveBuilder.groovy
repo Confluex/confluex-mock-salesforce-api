@@ -15,32 +15,32 @@ class MockRetrieveBuilder extends BaseBuilder {
     }
 
     public MockRetrieveResponse returnObject() {
+        def response = new MockRetrieveResponse()
         mockHttpsServer.respondTo(path(startsWith('/services/Soap/u/28.0'))
                 .and(body(stringHasXPath('/Envelope/Body/retrieve')))
         )
-                .withStatus(200)
-                .withBody() { ClientRequest request ->
-                    def requestDoc = new XmlSlurper().parseText(request.body)
-                    def ids = requestDoc.Body.retrieve.ids.text().split(',').toList()
-                    def fields = requestDoc.Body.retrieve.fieldList.text().split(',')
-                    buildXml {
-                        'env:Envelope'(NAMESPACES.collectEntries {key, value -> ["xmlns:$key", value]}) {
-                            'env:Body' {
-                                'sf:retrieveResponse' {
-                                    ids.each { id ->
-                                        'sf:result' {
-                                            'so:type'(requestDoc.Body.retrieve.sObjectType.text())
-                                            'so:Id'(id)
-                                            fields.each { field ->
-                                                "so:$field"(['xsi:nil':'true'])
-                                            }
-                                        }
+            .withStatus(200)
+            .withBody() { ClientRequest request ->
+                def requestDoc = new XmlSlurper().parseText(request.body)
+                def ids = requestDoc.Body.retrieve.ids.text().split(',').toList()
+                def fields = requestDoc.Body.retrieve.fieldList.text().split(',').toList().minus('Id')
+                buildSoapEnvelope {
+                    'env:Body' {
+//                        mkp.yield response.build()
+                        'sf:retrieveResponse' {
+                            ids.each { id ->
+                                'sf:result' {
+                                    'so:type'(requestDoc.Body.retrieve.sObjectType.text())
+                                    'so:Id'(id)
+                                    fields.each { field ->
+                                        mkp.yield response.buildFieldElement(field)
                                     }
                                 }
                             }
                         }
                     }
                 }
-        new MockRetrieveResponse()
+            }
+        return response
     }
 }

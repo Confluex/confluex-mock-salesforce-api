@@ -38,4 +38,21 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
             assert 'true' == evalXpath("/env:Envelope/env:Body/sf:retrieveResponse/sf:result[$index]/so:Email/@xsi:nil", responseBody)
         }
     }
+
+    @Test
+    void retrieveShouldReturnSpecificFieldValues() {
+        server.sforceApi().retrieve().returnObject().withField("Email", "steve@woz.org")
+
+        def root = new XmlSlurper().parse(new ClassPathResource('retrieve-request.xml').inputStream)
+        root.Header.SessionHeader.sessionId = '00arbitrary!sessionid'
+        root.Body.retrieve.fieldList = 'Id,Email'
+        root.Body.retrieve.sObjectType = 'Contact'
+        root.Body.retrieve.ids = '000000000000001'
+        String request = new StreamingMarkupBuilder().bind { mkp.yield root }
+
+        String response = sslClient.resource('https://localhost:8090/services/Soap/u/28.0/00MOCK000000org')
+                .entity(request, 'text/xml; charset=UTF-8')
+                .post(String.class)
+        assert 'steve@woz.org' == evalXpath('/env:Envelope/env:Body/sf:retrieveResponse/sf:result[1]/so:Email', response)
+    }
 }

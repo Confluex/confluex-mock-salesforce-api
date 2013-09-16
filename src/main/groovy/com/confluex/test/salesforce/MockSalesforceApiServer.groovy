@@ -2,6 +2,8 @@ package com.confluex.test.salesforce
 
 import com.confluex.mock.http.ClientRequest
 import com.confluex.mock.http.MockHttpsServer
+import com.confluex.test.salesforce.async.MockAsyncApi
+import com.confluex.test.salesforce.sforce.MockSforceApi
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovy.xml.StreamingMarkupBuilder
@@ -37,6 +39,10 @@ class MockSalesforceApiServer {
 
     MockSforceApi sforceApi() {
         sforceApi
+    }
+
+    int getPort() {
+        httpsServer.getPort()
     }
 
     void loginDefaults() {

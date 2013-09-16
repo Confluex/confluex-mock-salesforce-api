@@ -1,7 +1,8 @@
-package com.confluex.test.salesforce
+package com.confluex.test.salesforce.sforce
 
 import com.confluex.mock.http.ClientRequest
 import com.confluex.mock.http.MockHttpsServer
+import com.confluex.test.salesforce.BaseBuilder
 import groovy.util.logging.Slf4j
 
 import static com.confluex.mock.http.matchers.HttpMatchers.*

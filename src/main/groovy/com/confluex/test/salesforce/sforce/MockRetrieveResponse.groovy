@@ -1,4 +1,4 @@
-package com.confluex.test.salesforce
+package com.confluex.test.salesforce.sforce
 
 class MockRetrieveResponse {
     Map<String, String> fieldValues = [:]

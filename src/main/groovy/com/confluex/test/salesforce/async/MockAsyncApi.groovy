@@ -1,4 +1,4 @@
-package com.confluex.test.salesforce
+package com.confluex.test.salesforce.async
 
 import com.confluex.mock.http.MockHttpsServer
 

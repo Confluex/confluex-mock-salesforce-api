@@ -1,6 +1,7 @@
-package com.confluex.test.salesforce
+package com.confluex.test.salesforce.async
 
 import com.confluex.mock.http.MockHttpsServer
+import com.confluex.test.salesforce.BaseBuilder
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
 import org.hamcrest.Matcher

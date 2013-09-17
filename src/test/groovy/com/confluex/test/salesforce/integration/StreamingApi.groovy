@@ -12,6 +12,7 @@ import org.cometd.client.transport.LongPollingTransport
 import org.eclipse.jetty.client.ContentExchange
 import org.eclipse.jetty.client.HttpClient
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.springframework.core.io.ClassPathResource
 
@@ -19,7 +20,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
-@Slf4j
+@Slf4j @Ignore
 class StreamingApi {
     Properties config
 

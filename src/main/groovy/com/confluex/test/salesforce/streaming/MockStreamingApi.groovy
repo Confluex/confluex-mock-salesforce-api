@@ -3,6 +3,7 @@ package com.confluex.test.salesforce.streaming
 import com.confluex.mock.http.MockHttpsServer
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
+import groovy.util.logging.Slf4j
 
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.CyclicBarrier
@@ -10,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import static com.confluex.mock.http.matchers.HttpMatchers.*
 
+@Slf4j
 class MockStreamingApi {
     MockHttpsServer mockHttpsServer
     PushTopicSynchronizer pushTopicSynchronizer = new PushTopicSynchronizer()
@@ -114,9 +116,13 @@ class MockStreamingApi {
 
         void publish(List<Map<String, String>> messages) {
             // possible race condition if two threads call publish?  reset() sets messages, waitForPublish() threads read messages
-            this.messages.addAll(messages)
-            barrier = new CyclicBarrier(locks.get(), { reset() } as Runnable)
-            latch.countDown()
+            if (locks.get() > 0) {
+                this.messages.addAll(messages)
+                barrier = new CyclicBarrier(locks.get(), { reset() } as Runnable)
+                latch.countDown()
+            } else {
+                log.info("No subscribers to notify")
+            }
         }
     }
 }

@@ -27,7 +27,6 @@ class MockRetrieveBuilder extends BaseBuilder {
                 def fields = requestDoc.Body.retrieve.fieldList.text().split(',').toList().minus('Id')
                 buildSoapEnvelope {
                     'env:Body' {
-//                        mkp.yield response.build()
                         'sf:retrieveResponse' {
                             ids.each { id ->
                                 'sf:result' {

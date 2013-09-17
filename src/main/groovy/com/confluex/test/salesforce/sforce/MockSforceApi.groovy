@@ -7,6 +7,11 @@ class MockSforceApi {
 
     public MockSforceApi(MockHttpsServer mockHttpsServer) {
         this.mockHttpsServer = mockHttpsServer
+        defaults()
+    }
+
+    void defaults() {
+        retrieve().returnObject()
     }
 
     MockRetrieveBuilder retrieve() {

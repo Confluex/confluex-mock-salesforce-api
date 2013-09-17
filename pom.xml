@@ -226,6 +226,12 @@
                 <version>${jersey.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>org.cometd.java</groupId>
+                <artifactId>cometd-java-client</artifactId>
+                <version>2.6.0</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -286,6 +292,10 @@
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.cometd.java</groupId>
+            <artifactId>cometd-java-client</artifactId>
         </dependency>
     </dependencies>
     <profiles>

@@ -5,6 +5,10 @@ import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import org.springframework.core.io.ClassPathResource
 
+import javax.xml.namespace.QName
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.xpath.XPathFactory
+
 class BaseBuilder {
     static final Map<String, String> NAMESPACES = [
             env: 'http://schemas.xmlsoap.org/soap/envelope/',
@@ -16,6 +20,8 @@ class BaseBuilder {
     ]
 
     MockHttpsServer mockHttpsServer
+    def evaluator = XPathFactory.newInstance().newXPath()
+    def builder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
 
     BaseBuilder(MockHttpsServer mockHttpsServer) {
         this.mockHttpsServer = mockHttpsServer
@@ -52,5 +58,10 @@ class BaseBuilder {
                 mkp.yield editClosure
             }
         }
+    }
+
+    def evalXpath(String xpath, String xml, QName resultType) {
+        def rootElement = builder.parse(new ByteArrayInputStream(xml.bytes)).documentElement
+        evaluator.evaluate(xpath, rootElement, resultType)
     }
 }

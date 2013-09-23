@@ -106,8 +106,10 @@ class MockStreamingApi {
 
         Collection<Map<String, String>> waitForPublish() {
             locks.incrementAndGet()
-            latch.await()
-            messages
+            try {
+                latch.await()
+                return messages
+            } catch (InterruptedException e) {}
         }
 
         void notifyComplete() {

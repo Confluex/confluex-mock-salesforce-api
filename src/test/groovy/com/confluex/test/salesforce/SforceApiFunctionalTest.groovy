@@ -58,25 +58,8 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
 
     @Test
     void updateShouldRespondSuccessWithIdByDefault() {
-        def root = new XmlSlurper().parse(new ClassPathResource('generic-request.xml').inputStream)
-        root.Body.appendNode {
-            'm:update'(
-                    'xmlns:m':'urn:partner.soap.sforce.com',
-                    'xmlns:sobj':'urn:sobject.partner.soap.sforce.com',
-                    'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance') {
-                'm:sObjects' {
-                    'sobj:type'( ['xsi:type':'xsd:string'], 'Contact' )
-                    'sobj:Id'( 'xsi:type': 'xsd:string', '001234' )
-                    'sobj:FirstName'( 'NewName' )
-                }
-            }
-        }
-
-        String request = new StreamingMarkupBuilder().bind { mkp.yield root }
-        println request
-
         ClientResponse httpResponse = sslClient.resource('https://localhost:8090/services/Soap/u/28.0/00MOCK000000org')
-                .entity(request, 'text/xml; charset=UTF-8')
+                .entity(updateRequest([type: 'Contact', Id: '001234', FirstName: 'NewName']), 'text/xml; charset=UTF-8')
                 .post(ClientResponse)
 
         assert 200 == httpResponse.status
@@ -84,5 +67,36 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
         def response = httpResponse.getEntity(String)
         assert 'true' == evalXpath('/env:Envelope/env:Body/sf:updateResponse/sf:result[1]/sf:success', response)
         assert '001234' == evalXpath('/env:Envelope/env:Body/sf:updateResponse/sf:result[1]/sf:id', response)
+    }
+
+    @Test
+    void updateShouldCaptureRequestsForAssertion() {
+        sslClient.resource('https://localhost:8090/services/Soap/u/28.0/00MOCK000000org')
+                .entity(updateRequest([type: 'Contact', Id: '001234', FirstName: 'NewName']), 'text/xml; charset=UTF-8')
+                .post(String)
+
+        assert 0 == server.sforceApi().getRequests('retrieve').size()
+        assert 1 == server.sforceApi().getRequests('update').size()
+        assert 'Contact' == server.sforceApi().getRequests('update')[0].fields['type']
+        assert '001234' == server.sforceApi().getRequests('update')[0].fields['Id']
+        assert 'NewName' == server.sforceApi().getRequests('update')[0].fields['FirstName']
+    }
+
+    String updateRequest(Map<String, String> fields) {
+        def root = new XmlSlurper().parse(new ClassPathResource('generic-request.xml').inputStream)
+        root.Body.appendNode {
+            'm:update'(
+                    'xmlns:m':'urn:partner.soap.sforce.com',
+                    'xmlns:sobj':'urn:sobject.partner.soap.sforce.com',
+                    'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance') {
+                'm:sObjects' {
+                    fields.each { field ->
+                        "sobj:${field.key}"( "${field.value}" )
+                    }
+                }
+            }
+        }
+
+        new StreamingMarkupBuilder().bind { mkp.yield root }
     }
 }

@@ -4,6 +4,8 @@ import com.confluex.mock.http.ClientRequest
 import com.confluex.mock.http.MockHttpsServer
 import com.confluex.test.salesforce.BaseBuilder
 
+import javax.xml.xpath.XPathConstants
+
 import static com.confluex.mock.http.matchers.HttpMatchers.body
 import static com.confluex.mock.http.matchers.HttpMatchers.path
 import static com.confluex.mock.http.matchers.HttpMatchers.stringHasXPath
@@ -12,6 +14,14 @@ import static org.hamcrest.Matchers.startsWith
 class MockUpdateBuilder extends BaseBuilder {
     MockUpdateBuilder(MockHttpsServer mockHttpsServer) {
         super(mockHttpsServer)
+    }
+
+    SforceUpdateRequest capture(ClientRequest httpRequest) {
+        def request = new SforceUpdateRequest( httpRequest.body )
+        evalXpath('/Envelope/Body/update/sObjects/*', httpRequest.body, XPathConstants.NODESET).each {
+            request.fields[it.name.split(':')[1] ?: it] = it.textContent
+        }
+        request
     }
 
     MockUpdateResponse returnSuccess() {

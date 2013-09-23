@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <env:Header>
+        <SessionHeader xmlns="urn:partner.soap.sforce.com">
+            <sessionId></sessionId>
+        </SessionHeader>
+    </env:Header>
+    <env:Body>
+    </env:Body>
+</env:Envelope>

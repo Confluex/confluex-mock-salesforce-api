@@ -12,9 +12,14 @@ class MockSforceApi {
 
     void defaults() {
         retrieve().returnObject()
+        update().returnSuccess()
     }
 
     MockRetrieveBuilder retrieve() {
         new MockRetrieveBuilder(mockHttpsServer)
+    }
+
+    MockUpdateBuilder update() {
+        new MockUpdateBuilder(mockHttpsServer)
     }
 }

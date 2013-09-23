@@ -52,7 +52,37 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
 
         String response = sslClient.resource('https://localhost:8090/services/Soap/u/28.0/00MOCK000000org')
                 .entity(request, 'text/xml; charset=UTF-8')
-                .post(String.class)
+                .post(String)
         assert 'steve@woz.org' == evalXpath('/env:Envelope/env:Body/sf:retrieveResponse/sf:result[1]/so:Email', response)
+    }
+
+    @Test
+    void updateShouldRespondSuccessWithIdByDefault() {
+        def root = new XmlSlurper().parse(new ClassPathResource('generic-request.xml').inputStream)
+        root.Body.appendNode {
+            'm:update'(
+                    'xmlns:m':'urn:partner.soap.sforce.com',
+                    'xmlns:sobj':'urn:sobject.partner.soap.sforce.com',
+                    'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance') {
+                'm:sObjects' {
+                    'sobj:type'( ['xsi:type':'xsd:string'], 'Contact' )
+                    'sobj:Id'( 'xsi:type': 'xsd:string', '001234' )
+                    'sobj:FirstName'( 'NewName' )
+                }
+            }
+        }
+
+        String request = new StreamingMarkupBuilder().bind { mkp.yield root }
+        println request
+
+        ClientResponse httpResponse = sslClient.resource('https://localhost:8090/services/Soap/u/28.0/00MOCK000000org')
+                .entity(request, 'text/xml; charset=UTF-8')
+                .post(ClientResponse)
+
+        assert 200 == httpResponse.status
+
+        def response = httpResponse.getEntity(String)
+        assert 'true' == evalXpath('/env:Envelope/env:Body/sf:updateResponse/sf:result[1]/sf:success', response)
+        assert '001234' == evalXpath('/env:Envelope/env:Body/sf:updateResponse/sf:result[1]/sf:id', response)
     }
 }

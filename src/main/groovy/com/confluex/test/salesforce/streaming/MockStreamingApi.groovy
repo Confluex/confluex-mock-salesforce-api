@@ -109,7 +109,9 @@ class MockStreamingApi {
             try {
                 latch.await()
                 return messages
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {
+                []
+            }
         }
 
         void notifyComplete() {

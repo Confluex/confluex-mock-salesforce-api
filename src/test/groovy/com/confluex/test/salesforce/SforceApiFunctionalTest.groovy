@@ -87,6 +87,29 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
         assert '0' == evalXpath('/env:Envelope/env:Body/sf:queryResponse/sf:result[1]/sf:size', response)
     }
 
+    @Test
+    void selectQueryWithResultDataShouldReturnResults() {
+        server.sforceApi().query().returnResults()
+                .withRow().withField('FirstName', 'Charlie').withField('LastName', 'Chaplin').withField('Account.Description', 'United Artist')
+                .withRow().withField('FirstName', 'Batman') // no more fields set
+
+        String response = postSforce(queryRequest("SELECT FirstName, LastName, Account.Description FROM Contact WHERE Id = '1'"))
+
+        assert '2' == evalXpath('/env:Envelope/env:Body/sf:queryResponse/sf:result[1]/sf:size', response)
+        assert 'sf:sObject' == evalXpath('/env:Envelope/env:Body/sf:queryResponse/sf:result[1]/sf:records[1]/@xsi:type', response)
+        assert 'Contact' == evalXpath('/env:Envelope/env:Body/sf:queryResponse/sf:result[1]/sf:records[1]/sf:type', response)
+        assert 'Charlie' == evalXpath('/env:Envelope/env:Body/sf:queryResponse/sf:result[1]/sf:records[1]/sf:FirstName', response)
+        assert 'Chaplin' == evalXpath('/env:Envelope/env:Body/sf:queryResponse/sf:result[1]/sf:records[1]/sf:LastName', response)
+        assert 'sf:sObject' == evalXpath('/env:Envelope/env:Body/sf:queryResponse/sf:result[1]/sf:records[1]/sf:Account/@xsi:type', response)
+        assert 'United Artist' == evalXpath('/env:Envelope/env:Body/sf:queryResponse/sf:result[1]/sf:records[1]/sf:Account/sf:Description', response)
+
+        assert 'Contact' == evalXpath('/env:Envelope/env:Body/sf:queryResponse/sf:result[1]/sf:records[2]/sf:type', response)
+        assert 'Batman' == evalXpath('/env:Envelope/env:Body/sf:queryResponse/sf:result[1]/sf:records[2]/sf:FirstName', response)
+        assert '' == evalXpath('/env:Envelope/env:Body/sf:queryResponse/sf:result[1]/sf:records[2]/sf:LastName', response)
+        assert 'sf:sObject' == evalXpath('/env:Envelope/env:Body/sf:queryResponse/sf:result[1]/sf:records[2]/sf:Account/@xsi:type', response)
+        assert '' == evalXpath('/env:Envelope/env:Body/sf:queryResponse/sf:result[1]/sf:records[2]/sf:Account/sf:Description', response)
+    }
+
     private String postSforce(String request) {
         postSforce(request, String)
     }

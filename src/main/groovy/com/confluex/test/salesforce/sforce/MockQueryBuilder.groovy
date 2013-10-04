@@ -21,20 +21,72 @@ class MockQueryBuilder extends BaseBuilder {
         )
                 .withStatus(200)
                 .withBody() { ClientRequest request ->
-            def requestDoc = new XmlSlurper().parseText(request.body)
-            buildSoapEnvelope {
-                'env:Body' {
-                    'sf:queryResponse' {
-                        'sf:result'('xsi:type': 'QueryResult') {
-                            'sf:done' 'true'
-                            'sf:queryLocator'('xsi:nil': 'true')
-                            'sf:size' '0'
+                    def requestDoc = new XmlSlurper().parseText(request.body)
+                    def query = requestDoc.Body.query.queryString.toString()
+
+                    def rows = applyQuery(query, response.rows)
+                    buildSoapEnvelope {
+                        'env:Body' {
+                            'sf:queryResponse' {
+                                'sf:result'('xsi:type': 'QueryResult') {
+                                    'sf:done' 'true'
+                                    'sf:queryLocator'('xsi:nil': 'true')
+                                    rows.each{ row ->
+                                        'sf:records'('xsi:type':'sf:sObject') {
+                                            'sf:type'((query =~ /FROM (\w+)/)[0][1])
+                                            mkp.yield buildRecord(row)
+                                        }
+                                    }
+                                    'sf:size' "${response.rows.size()}"
+                                }
+                            }
                         }
                     }
-                }
-            }
         }
 
         response
+    }
+
+    private Closure buildRecord(Map<String, String> row) {
+        return {
+            row.keySet().each { fieldName ->
+                def fieldValue = row[fieldName]
+                if (fieldValue instanceof Map) {
+                    "sf:$fieldName"('xsi:type': 'sf:sObject') {
+                        mkp.yield buildRecord(fieldValue)
+                    }
+                } else {
+                    "sf:$fieldName"(fieldValue)
+                }
+            }
+        }
+    }
+
+    private List<Map<String, Object>> applyQuery(String query, List<Map<String, Object>> rows) {
+        rows.collect { copyWithFields(parseFields(query), it) }
+    }
+
+    private List<String> parseFields(String query) {
+        (query =~ /SELECT (.+) FROM/)[0][1].split(',').collect { it.trim() }
+    }
+
+    private Map<String, Object> copyWithFields(List<String> fields, Map<String, Object> source) {
+        def copy = [:]
+        fields.each { field ->
+            def parts = field.split('\\.').toList()
+            def value = parts.inject(source) { map, key -> (map instanceof Map) ? (map[key] ?: '') : map }
+            putIntoNestedMap(copy, parts, value)
+        }
+        copy
+    }
+
+    private void putIntoNestedMap(Map<String, Object> map, List<String> fields, String value) {
+        def field = fields.remove(0)
+        if (fields.isEmpty()) {
+            map[field] = value
+        } else {
+            map[field] = map[field] ?: [:]
+            putIntoNestedMap(map[field], fields, value)
+        }
     }
 }

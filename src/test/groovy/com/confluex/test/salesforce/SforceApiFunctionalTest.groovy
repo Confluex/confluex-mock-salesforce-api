@@ -20,9 +20,7 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
         root.Body.retrieve.ids = '000000000000001,000000000000002'
         String request = new StreamingMarkupBuilder().bind { mkp.yield root }
 
-        ClientResponse response = sslClient.resource('https://localhost:8090/services/Soap/u/28.0/00MOCK000000org')
-                .entity(request, 'text/xml; charset=UTF-8')
-                .post(ClientResponse.class)
+        ClientResponse response = postSforce(request, ClientResponse)
 
         assert response.status == 200
 
@@ -58,9 +56,7 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
 
     @Test
     void updateShouldRespondSuccessWithIdByDefault() {
-        ClientResponse httpResponse = sslClient.resource('https://localhost:8090/services/Soap/u/28.0/00MOCK000000org')
-                .entity(updateRequest([type: 'Contact', Id: '001234', FirstName: 'NewName']), 'text/xml; charset=UTF-8')
-                .post(ClientResponse)
+        ClientResponse httpResponse = postSforce(updateRequest([type: 'Contact', Id: '001234', FirstName: 'NewName']), ClientResponse)
 
         assert 200 == httpResponse.status
 
@@ -71,9 +67,7 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
 
     @Test
     void updateShouldCaptureRequestsForAssertion() {
-        sslClient.resource('https://localhost:8090/services/Soap/u/28.0/00MOCK000000org')
-                .entity(updateRequest([type: 'Contact', Id: '001234', FirstName: 'NewName']), 'text/xml; charset=UTF-8')
-                .post(String)
+        postSforce(updateRequest([type: 'Contact', Id: '001234', FirstName: 'NewName']))
 
         assert 0 == server.sforceApi().getRequests('retrieve').size()
         assert 1 == server.sforceApi().getRequests('update').size()
@@ -82,9 +76,29 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
         assert 'NewName' == server.sforceApi().getRequests('update')[0].fields['FirstName']
     }
 
+    @Test
+    void selectQueryShouldReturnEmptyResults() {
+        ClientResponse httpResponse = postSforce(queryRequest("SELECT FirstName, LastName, Account.Description FROM Contact WHERE Id = '1'"), ClientResponse)
+
+        assert 200 == httpResponse.status
+        def response = httpResponse.getEntity(String)
+        assert 'true' == evalXpath('/env:Envelope/env:Body/sf:queryResponse/sf:result[1]/sf:done', response)
+        assert 'true' == evalXpath('/env:Envelope/env:Body/sf:queryResponse/sf:result[1]/sf:queryLocator/@xsi:nil', response)
+        assert '0' == evalXpath('/env:Envelope/env:Body/sf:queryResponse/sf:result[1]/sf:size', response)
+    }
+
+    private String postSforce(String request) {
+        postSforce(request, String)
+    }
+
+    private <T> T postSforce(String request, Class<T> typeToReturn) {
+        sslClient.resource('https://localhost:8090/services/Soap/u/28.0/00MOCK000000org')
+                .entity(request, 'text/xml; charset=UTF-8')
+                .post(typeToReturn)
+    }
+
     String updateRequest(Map<String, String> fields) {
-        def root = new XmlSlurper().parse(new ClassPathResource('generic-request.xml').inputStream)
-        root.Body.appendNode {
+        sforceRequest {
             'm:update'(
                     'xmlns:m':'urn:partner.soap.sforce.com',
                     'xmlns:sobj':'urn:sobject.partner.soap.sforce.com',
@@ -96,7 +110,22 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
                 }
             }
         }
+    }
 
+    String queryRequest(String query) {
+        sforceRequest {
+            'm:query'(
+                    'xmlns:m':'urn:partner.soap.sforce.com',
+                    'xmlns:sobj':'urn:sobject.partner.soap.sforce.com') {
+                'm:queryString' query
+            }
+        }
+    }
+
+    String sforceRequest(Closure bodyClosure) {
+        def root = new XmlSlurper().parse(new ClassPathResource('generic-request.xml').inputStream)
+        root.Body.appendNode(bodyClosure)
         new StreamingMarkupBuilder().bind { mkp.yield root }
     }
+
 }

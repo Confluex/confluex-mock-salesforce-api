@@ -18,6 +18,7 @@ class MockSforceApi {
     void defaults() {
         retrieve().returnObject()
         update().returnSuccess()
+        query().returnResults()
     }
 
     List<SforceRequest> getRequests(String call) {
@@ -40,6 +41,10 @@ class MockSforceApi {
 
     MockUpdateBuilder update() {
         new MockUpdateBuilder(mockHttpsServer)
+    }
+
+    MockQueryBuilder query() {
+        new MockQueryBuilder(mockHttpsServer)
     }
 
     private xpath(String xpath, String xml) {

@@ -28,12 +28,12 @@ class MockQueryBuilder extends BaseBuilder {
                     buildSoapEnvelope {
                         'env:Body' {
                             'sf:queryResponse' {
-                                'sf:result'('xsi:type': 'QueryResult') {
+                                'sf:result'('xsi:type': 'sf:QueryResult') {
                                     'sf:done' 'true'
                                     'sf:queryLocator'('xsi:nil': 'true')
                                     rows.each{ row ->
-                                        'sf:records'('xsi:type':'sf:sObject') {
-                                            'sf:type'((query =~ /FROM (\w+)/)[0][1])
+                                        'sf:records'('xsi:type':'so:sObject') {
+                                            'so:type'((query =~ /FROM (\w+)/)[0][1])
                                             mkp.yield buildRecord(row)
                                         }
                                     }
@@ -52,11 +52,11 @@ class MockQueryBuilder extends BaseBuilder {
             row.keySet().each { fieldName ->
                 def fieldValue = row[fieldName]
                 if (fieldValue instanceof Map) {
-                    "sf:$fieldName"('xsi:type': 'sf:sObject') {
+                    "so:$fieldName"('xsi:type': 'so:sObject') {
                         mkp.yield buildRecord(fieldValue)
                     }
                 } else {
-                    "sf:$fieldName"(fieldValue)
+                    "so:$fieldName"(fieldValue)
                 }
             }
         }

@@ -3,7 +3,7 @@
 
     <groupId>com.confluex</groupId>
     <artifactId>confluex-mock-salesforce-api</artifactId>
-    <version>0.1.2</version>
+    <version>0.1.3-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Confluex: Mock Salesforce.com Testing API</name>
     <url>https://github.com/Confluex/confluex-mock-salesforce-api</url>

@@ -32,9 +32,7 @@ class MockRetrieveBuilder extends BaseBuilder {
                                 'sf:result' {
                                     'so:type'(requestDoc.Body.retrieve.sObjectType.text())
                                     'so:Id'(id)
-                                    fields.each { field ->
-                                        mkp.yield response.buildFieldElement(field)
-                                    }
+                                    response.buildFieldElements(mkp, fields)
                                 }
                             }
                         }

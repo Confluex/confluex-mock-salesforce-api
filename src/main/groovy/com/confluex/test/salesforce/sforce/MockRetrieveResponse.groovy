@@ -19,7 +19,8 @@ class MockRetrieveResponse {
     }
 
     void buildFieldElements(mkp, List<String> fieldNames) {
-        final def mergedFieldValues = (fieldNames.collectEntries { [it, null] } + fieldValues)
+        final def mapOfEmptyFields = fieldNames.collectEntries { [it, null] }
+        final def mergedFieldValues = mapOfEmptyFields + fieldValues
 
         def nestedFieldValues = [:]
         mergedFieldValues.keySet().sort().each { fieldName ->
@@ -37,9 +38,10 @@ class MockRetrieveResponse {
 
     Closure buildFieldElements(Map<String, Object> nestedFieldValues) {
         return {
-            nestedFieldValues.keySet().each { fieldName ->
+            final buildField = { fieldName ->
                 "so:$fieldName"(buildFieldValue(nestedFieldValues[fieldName]))
             }
+            nestedFieldValues.keySet().each(buildField)
         }
     }
 

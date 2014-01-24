@@ -150,6 +150,17 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
         assert 'NewName' == server.sforceApi().getRequests('upsert')[0].fields['FirstName']
     }
 
+    @Test
+    void upsertWithExpectedError_shouldReturnErrorsAndNotBeSuccessful() {
+        server.sforceApi().upsert().returnFailure().withError("TESTING_STATUS_CODE", "testing error message")
+
+        String response = postSforce(upsertRequest([type: 'Contact', Id: '001234', FirstName: 'NewName']))
+
+        assert 'false' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[1]/sf:success', response)
+        assert 'TESTING_STATUS_CODE' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[1]/sf:errors/sf:statusCode', response)
+        assert 'testing error message' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[1]/sf:errors/sf:message', response)
+    }
+
     private String postSforce(String request) {
         postSforce(request, String)
     }

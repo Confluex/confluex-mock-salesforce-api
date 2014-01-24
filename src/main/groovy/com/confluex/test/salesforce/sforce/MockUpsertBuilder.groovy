@@ -24,7 +24,8 @@ class MockUpsertBuilder extends BaseBuilder {
         request
     }
 
-    void returnSuccess() {
+    MockUpsertResponse returnSuccess() {
+        def response = new MockUpsertResponse()
         mockHttpsServer.respondTo(path(startsWith('/services/Soap/u/28.0'))
                 .and(body(stringHasXPath('/Envelope/Body/upsert')))
         )
@@ -43,5 +44,37 @@ class MockUpsertBuilder extends BaseBuilder {
                     }
                 }
             }
+        return response
+    }
+
+    MockUpsertResponse returnFailure() {
+        def response = new MockUpsertResponse()
+
+        mockHttpsServer.respondTo(path(startsWith('/services/Soap/u/28.0'))
+                .and(body(stringHasXPath('/Envelope/Body/upsert')))
+        )
+                .withStatus(200)
+                .withBody { ClientRequest request ->
+                    buildSoapEnvelope {
+                        def requestDoc = new XmlSlurper().parseText(request.body)
+                        def id = requestDoc.Body.upsert.sObjects.Id.text()
+                        'env:Body' {
+                            'sf:upsertResponse' {
+                                'sf:result' {
+                                    response.errors.each { error ->
+                                        'sf:errors' {
+                                            'sf:message'(error.message)
+                                            'sf:statusCode'(error.statusCode)
+                                        }
+                                    }
+                                    'sf:id'(id)
+                                    'sf:success'('false')
+                                }
+                            }
+                        }
+                    }
+        }
+
+        return response
     }
 }

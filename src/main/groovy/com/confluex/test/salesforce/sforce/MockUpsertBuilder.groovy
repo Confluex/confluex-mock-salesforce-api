@@ -11,40 +11,37 @@ import static com.confluex.mock.http.matchers.HttpMatchers.path
 import static com.confluex.mock.http.matchers.HttpMatchers.stringHasXPath
 import static org.hamcrest.Matchers.startsWith
 
-class MockUpdateBuilder extends BaseBuilder {
-    MockUpdateBuilder(MockHttpsServer mockHttpsServer) {
+class MockUpsertBuilder extends BaseBuilder {
+    MockUpsertBuilder(MockHttpsServer mockHttpsServer) {
         super(mockHttpsServer)
     }
 
     SforceObjectRequest capture(ClientRequest httpRequest) {
         def request = new SforceObjectRequest( httpRequest.body )
-        evalXpath('/Envelope/Body/update/sObjects/*', httpRequest.body, XPathConstants.NODESET).each {
+        evalXpath('/Envelope/Body/upsert/sObjects/*', httpRequest.body, XPathConstants.NODESET).each {
             request.fields[it.name.split(':')[1] ?: it] = it.textContent
         }
         request
     }
 
-    MockUpdateResponse returnSuccess() {
-        def response = new MockUpdateResponse()
-
+    void returnSuccess() {
         mockHttpsServer.respondTo(path(startsWith('/services/Soap/u/28.0'))
-                .and(body(stringHasXPath('/Envelope/Body/update')))
+                .and(body(stringHasXPath('/Envelope/Body/upsert')))
         )
-                .withStatus(200)
-                .withBody() { ClientRequest request ->
+            .withStatus(200)
+            .withBody { ClientRequest request ->
+                buildSoapEnvelope {
                     def requestDoc = new XmlSlurper().parseText(request.body)
-                    def id = requestDoc.Body.update.sObjects.Id.text()
-                    buildSoapEnvelope {
-                        'env:Body' {
-                            'sf:updateResponse' {
-                                'sf:result' {
-                                    'sf:id'(id)
-                                    'sf:success'('true')
-                                }
+                    def id = requestDoc.Body.upsert.sObjects.Id.text()
+                    'env:Body' {
+                        'sf:upsertResponse' {
+                            'sf:result' {
+                                'sf:id'(id)
+                                'sf:success'('true')
                             }
                         }
                     }
                 }
-        return response
+            }
     }
 }

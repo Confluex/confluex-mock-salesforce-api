@@ -127,6 +127,29 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
         assert '' == evalXpath('/env:Envelope/env:Body/sf:queryResponse/sf:result[1]/sf:records[2]/so:Account/so:Description', response)
     }
 
+    @Test
+    void upsertShouldRespondSuccessWithIdByDefault() {
+        ClientResponse httpResponse = postSforce(upsertRequest([type: 'Contact', Id: '001234', FirstName: 'NewName']), ClientResponse)
+
+        assert 200 == httpResponse.status
+
+        def response = httpResponse.getEntity(String)
+        assert 'true' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[1]/sf:success', response)
+        assert '001234' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[1]/sf:id', response)
+    }
+
+    @Test
+    void upsertShouldCaptureRequestsForAssertion() {
+        postSforce(upsertRequest([type: 'Contact', Id: '001234', FirstName: 'NewName']))
+
+        assert 0 == server.sforceApi().getRequests('retrieve').size()
+        assert 0 == server.sforceApi().getRequests('update').size()
+        assert 1 == server.sforceApi().getRequests('upsert').size()
+        assert 'Contact' == server.sforceApi().getRequests('upsert')[0].fields['type']
+        assert '001234' == server.sforceApi().getRequests('upsert')[0].fields['Id']
+        assert 'NewName' == server.sforceApi().getRequests('upsert')[0].fields['FirstName']
+    }
+
     private String postSforce(String request) {
         postSforce(request, String)
     }
@@ -140,6 +163,21 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
     String updateRequest(Map<String, String> fields) {
         sforceRequest {
             'm:update'(
+                    'xmlns:m':'urn:partner.soap.sforce.com',
+                    'xmlns:sobj':'urn:sobject.partner.soap.sforce.com',
+                    'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance') {
+                'm:sObjects' {
+                    fields.each { field ->
+                        "sobj:${field.key}"( "${field.value}" )
+                    }
+                }
+            }
+        }
+    }
+
+    String upsertRequest(Map<String, String> fields) {
+        sforceRequest {
+            'm:upsert'(
                     'xmlns:m':'urn:partner.soap.sforce.com',
                     'xmlns:sobj':'urn:sobject.partner.soap.sforce.com',
                     'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance') {

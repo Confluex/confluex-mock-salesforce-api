@@ -1,9 +1,9 @@
 package com.confluex.test.salesforce.sforce
 
-class SforceUpdateRequest extends SforceRequest {
+class SforceObjectRequest extends SforceRequest {
     Map<String, String> fields = [:]
 
-    SforceUpdateRequest(String xml) {
+    SforceObjectRequest(String xml) {
         super(xml)
     }
 }

@@ -18,6 +18,7 @@ class MockSforceApi {
     void defaults() {
         retrieve().returnObject()
         update().returnSuccess()
+        upsert().returnSuccess()
         query().returnResults()
     }
 
@@ -28,6 +29,9 @@ class MockSforceApi {
             switch(call) {
                 case 'update':
                     update().capture(it)
+                    break
+                case 'upsert':
+                    upsert().capture(it)
                     break
                 default:
                     new SforceRequest(it.body)
@@ -45,6 +49,10 @@ class MockSforceApi {
 
     MockQueryBuilder query() {
         new MockQueryBuilder(mockHttpsServer)
+    }
+
+    MockUpsertBuilder upsert() {
+        new MockUpsertBuilder(mockHttpsServer)
     }
 
     private xpath(String xpath, String xml) {

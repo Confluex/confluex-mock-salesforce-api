@@ -54,7 +54,7 @@ class MockUpsertBuilder extends BaseBuilder {
                 .and(body(stringHasXPath('/Envelope/Body/upsert')))
         )
                 .withStatus(200)
-                .withBody { ClientRequest request ->
+                .withBody { ClientRequest request ->                                                       T
                     buildSoapEnvelope {
                         def requestDoc = new XmlSlurper().parseText(request.body)
                         def id = requestDoc.Body.upsert.sObjects.Id.text()

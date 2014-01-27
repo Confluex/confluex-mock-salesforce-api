@@ -173,7 +173,7 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
                     [type: 'Contact', Id: '001234', FirstName: 'NewName1'],
                     [type: 'Contact', Id: '002345', FirstName: 'NewName2'],
                     [type: 'Contact', Id: '003456', FirstName: 'NewName3'],
-                    [type: 'Contact', Id: '004567', FirstName: 'NewName4'],
+                    [type: 'Contact', Id: '004567', FirstName: 'NewName4']
                 ]))
 
         assert 'true' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[1]/sf:success', response)
@@ -196,7 +196,7 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
 
         String response = postSforce(upsertRequest([
                 [type: 'Contact', Id: '001234', FirstName: 'NewName1'],
-                [type: 'Contact', Id: '002345', FirstName: 'NewName2'],
+                [type: 'Contact', Id: '002345', FirstName: 'NewName2']
         ]))
 
         assert '2' == evalXpath('count(/env:Envelope/env:Body/sf:upsertResponse/sf:result)', response)
@@ -206,6 +206,31 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
 
         assert '0' == evalXpath('count(/env:Envelope/env:Body/sf:upsertResponse/sf:result[1]/sf:errors)', response)
         assert '1' == evalXpath('count(/env:Envelope/env:Body/sf:upsertResponse/sf:result[2]/sf:errors)', response)
+    }
+
+    @Test
+    void upsertMultipleObjects_shouldReturnSuccessForIntermediateObjectsByDefault() {
+        server.sforceApi().upsert()
+                .returnFailure().withError("STATUS_CODE", "error message").forObject(4)
+
+        String response = postSforce(upsertRequest([
+                [type: 'Contact', Id: '001234', FirstName: 'NewName1'],
+                [type: 'Contact', Id: '002345', FirstName: 'NewName2'],
+                [type: 'Contact', Id: '003456', FirstName: 'NewName3'],
+                [type: 'Contact', Id: '004567', FirstName: 'NewName4'],
+                [type: 'Contact', Id: '005678', FirstName: 'NewName5'],
+                [type: 'Contact', Id: '006789', FirstName: 'NewName6']
+        ]))
+
+        assert '6' == evalXpath('count(/env:Envelope/env:Body/sf:upsertResponse/sf:result)', response)
+
+        assert 'true' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[1]/sf:success', response)
+        assert 'true' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[2]/sf:success', response)
+        assert 'true' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[3]/sf:success', response)
+        assert 'true' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[4]/sf:success', response)
+        assert 'false' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[5]/sf:success', response)
+        assert 'true' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[6]/sf:success', response)
+
     }
 
     private String postSforce(String request) {

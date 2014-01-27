@@ -2,8 +2,8 @@ package com.confluex.test.salesforce.sforce
 
 class MockUpsertResponse {
     final MockUpsertBuilder builder
-    def currentResult = defaultResult()
-    def results = [currentResult]
+    private currentResult = defaultResult()
+    private results = [currentResult]
 
     MockUpsertResponse(MockUpsertBuilder builder) {
         this.builder = builder
@@ -15,9 +15,9 @@ class MockUpsertResponse {
     }
 
     MockUpsertBuilder forObject(int index) {
+        if (results.contains(currentResult)) results.remove(currentResult)
         results[index] = currentResult
         currentResult = defaultResult()
-        results.add currentResult
         builder
     }
 
@@ -27,5 +27,9 @@ class MockUpsertResponse {
 
     void setResultSuccess(String success) {
         currentResult.success = success
+    }
+
+    Map<String, Object> getResult(int index) {
+        results[index] ?: defaultResult()
     }
 }

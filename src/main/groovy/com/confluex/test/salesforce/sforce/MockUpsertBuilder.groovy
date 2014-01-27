@@ -37,13 +37,13 @@ class MockUpsertBuilder extends BaseBuilder {
                                 ids.eachWithIndex { id, index ->
                                     'sf:result' {
                                         'sf:id'(id)
-                                        myResponse.results[index].errors.each { error ->
+                                        myResponse.getResult(index).errors.each { error ->
                                             'sf:errors' {
                                                 'sf:message'(error.message)
                                                 'sf:statusCode'(error.statusCode)
                                             }
                                         }
-                                        'sf:success'(myResponse.results[index].success)
+                                        'sf:success'(myResponse.getResult(index).success)
                                     }
                                 }
                             }

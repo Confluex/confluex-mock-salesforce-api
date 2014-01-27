@@ -161,6 +161,32 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
         assert 'testing error message' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[1]/sf:errors/sf:message', response)
     }
 
+    @Test
+    void upsertWithSomeExpectedErrors_shouldReturnTheCorrectResultsInOrder() {
+        server.sforceApi().upsert()
+            .returnSuccess().forObject(0)
+            .returnFailure().withError("STATUS_CODE", "error message").forObject(1)
+            .returnFailure().withError("STATUS CODE 1", "error message 1").withError("STATUS CODE 2", "error message 2").forObject(2)
+            // no mention of the 4th record, because I want to see that the default is success
+
+        String response = postSforce(upsertRequest([
+                    [type: 'Contact', Id: '001234', FirstName: 'NewName1'],
+                    [type: 'Contact', Id: '002345', FirstName: 'NewName2'],
+                    [type: 'Contact', Id: '003456', FirstName: 'NewName3'],
+                    [type: 'Contact', Id: '004567', FirstName: 'NewName4'],
+                ]))
+
+        assert 'true' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[1]/sf:success', response)
+        assert 'false' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[2]/sf:success', response)
+        assert 'false' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[3]/sf:success', response)
+        assert 'true' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[4]/sf:success', response)
+
+        assert '0' == evalXpath('count(/env:Envelope/env:Body/sf:upsertResponse/sf:result[1]/sf:errors)', response)
+        assert '1' == evalXpath('count(/env:Envelope/env:Body/sf:upsertResponse/sf:result[2]/sf:errors)', response)
+        assert '2' == evalXpath('count(/env:Envelope/env:Body/sf:upsertResponse/sf:result[3]/sf:errors)', response)
+        assert '0' == evalXpath('count(/env:Envelope/env:Body/sf:upsertResponse/sf:result[4]/sf:errors)', response)
+    }
+
     private String postSforce(String request) {
         postSforce(request, String)
     }
@@ -187,14 +213,20 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
     }
 
     String upsertRequest(Map<String, String> fields) {
+        upsertRequest( [fields] )
+    }
+
+    String upsertRequest(List<Map<String, String>> records) {
         sforceRequest {
             'm:upsert'(
                     'xmlns:m':'urn:partner.soap.sforce.com',
                     'xmlns:sobj':'urn:sobject.partner.soap.sforce.com',
                     'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance') {
-                'm:sObjects' {
-                    fields.each { field ->
-                        "sobj:${field.key}"( "${field.value}" )
+                records.each { fields ->
+                    'm:sObjects' {
+                        fields.each { field ->
+                            "sobj:${field.key}"( "${field.value}" )
+                        }
                     }
                 }
             }

@@ -12,8 +12,44 @@ import static com.confluex.mock.http.matchers.HttpMatchers.stringHasXPath
 import static org.hamcrest.Matchers.startsWith
 
 class MockUpsertBuilder extends BaseBuilder {
+    MockUpsertResponse myResponse
+
     MockUpsertBuilder(MockHttpsServer mockHttpsServer) {
         super(mockHttpsServer)
+        myResponse = new MockUpsertResponse(this)
+        matchUpsertRequests()
+    }
+
+    void matchUpsertRequests() {
+        mockHttpsServer.respondTo(path(startsWith('/services/Soap/u/28.0'))
+                .and(body(stringHasXPath('/Envelope/Body/upsert')))
+        )
+                .withStatus(200)
+                .withBody { ClientRequest request ->
+                    buildSoapEnvelope {
+                        def requestDoc = new XmlSlurper().parseText(request.body)
+                        def ids = requestDoc.Body.upsert.sObjects.collect {
+                            it.Id.text()
+                        }
+
+                        'env:Body' {
+                            'sf:upsertResponse' {
+                                myResponse.results.eachWithIndex { result, index ->
+                                    'sf:result' {
+                                        'sf:id'(ids[index])
+                                        result.errors.each { error ->
+                                            'sf:errors' {
+                                                'sf:message'(error.message)
+                                                'sf:statusCode'(error.statusCode)
+                                            }
+                                        }
+                                        'sf:success'(result.success)
+                                    }
+                                }
+                            }
+                        }
+                    }
+        }
     }
 
     SforceObjectRequest capture(ClientRequest httpRequest) {
@@ -25,56 +61,12 @@ class MockUpsertBuilder extends BaseBuilder {
     }
 
     MockUpsertResponse returnSuccess() {
-        def response = new MockUpsertResponse()
-        mockHttpsServer.respondTo(path(startsWith('/services/Soap/u/28.0'))
-                .and(body(stringHasXPath('/Envelope/Body/upsert')))
-        )
-            .withStatus(200)
-            .withBody { ClientRequest request ->
-                buildSoapEnvelope {
-                    def requestDoc = new XmlSlurper().parseText(request.body)
-                    def id = requestDoc.Body.upsert.sObjects.Id.text()
-                    'env:Body' {
-                        'sf:upsertResponse' {
-                            'sf:result' {
-                                'sf:id'(id)
-                                'sf:success'('true')
-                            }
-                        }
-                    }
-                }
-            }
-        return response
+        myResponse.resultSuccess = 'true'
+        return myResponse
     }
 
     MockUpsertResponse returnFailure() {
-        def response = new MockUpsertResponse()
-
-        mockHttpsServer.respondTo(path(startsWith('/services/Soap/u/28.0'))
-                .and(body(stringHasXPath('/Envelope/Body/upsert')))
-        )
-                .withStatus(200)
-                .withBody { ClientRequest request ->                                                       T
-                    buildSoapEnvelope {
-                        def requestDoc = new XmlSlurper().parseText(request.body)
-                        def id = requestDoc.Body.upsert.sObjects.Id.text()
-                        'env:Body' {
-                            'sf:upsertResponse' {
-                                'sf:result' {
-                                    response.errors.each { error ->
-                                        'sf:errors' {
-                                            'sf:message'(error.message)
-                                            'sf:statusCode'(error.statusCode)
-                                        }
-                                    }
-                                    'sf:id'(id)
-                                    'sf:success'('false')
-                                }
-                            }
-                        }
-                    }
-        }
-
-        return response
+        myResponse.resultSuccess = 'false'
+        return myResponse
     }
 }

@@ -34,16 +34,16 @@ class MockUpsertBuilder extends BaseBuilder {
 
                         'env:Body' {
                             'sf:upsertResponse' {
-                                myResponse.results.eachWithIndex { result, index ->
+                                ids.eachWithIndex { id, index ->
                                     'sf:result' {
-                                        'sf:id'(ids[index])
-                                        result.errors.each { error ->
+                                        'sf:id'(id)
+                                        myResponse.results[index].errors.each { error ->
                                             'sf:errors' {
                                                 'sf:message'(error.message)
                                                 'sf:statusCode'(error.statusCode)
                                             }
                                         }
-                                        'sf:success'(result.success)
+                                        'sf:success'(myResponse.results[index].success)
                                     }
                                 }
                             }

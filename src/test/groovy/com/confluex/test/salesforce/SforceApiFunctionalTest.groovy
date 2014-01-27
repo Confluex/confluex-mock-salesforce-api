@@ -187,6 +187,27 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
         assert '0' == evalXpath('count(/env:Envelope/env:Body/sf:upsertResponse/sf:result[4]/sf:errors)', response)
     }
 
+    @Test
+    void upsertMultipleObjects_shouldReturnSameNumberOfResults_whenMoreExpectationsExist() {
+        server.sforceApi().upsert()
+                .returnSuccess().forObject(0)
+                .returnFailure().withError("STATUS_CODE", "error message").forObject(1)
+                .returnFailure().withError("STATUS CODE 1", "error message 1").withError("STATUS CODE 2", "error message 2").forObject(2)
+
+        String response = postSforce(upsertRequest([
+                [type: 'Contact', Id: '001234', FirstName: 'NewName1'],
+                [type: 'Contact', Id: '002345', FirstName: 'NewName2'],
+        ]))
+
+        assert '2' == evalXpath('count(/env:Envelope/env:Body/sf:upsertResponse/sf:result)', response)
+
+        assert 'true' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[1]/sf:success', response)
+        assert 'false' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[2]/sf:success', response)
+
+        assert '0' == evalXpath('count(/env:Envelope/env:Body/sf:upsertResponse/sf:result[1]/sf:errors)', response)
+        assert '1' == evalXpath('count(/env:Envelope/env:Body/sf:upsertResponse/sf:result[2]/sf:errors)', response)
+    }
+
     private String postSforce(String request) {
         postSforce(request, String)
     }

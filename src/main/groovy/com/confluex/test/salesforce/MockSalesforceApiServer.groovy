@@ -63,10 +63,23 @@ class MockSalesforceApiServer {
         ).withBody(xml)
     }
 
+    void oauthDefaults() {
+        String json = '''
+{
+"id":"https://login.salesforce.com/id/00Di0000000cjCZEAY/005i0000001XnFkAAK",
+"issued_at":"1391183965298",
+"instance_url":"https://na15.salesforce.com",
+"signature":"+a.shorter.signature=",
+"access_token":"some.kind.of.long.crazy.string.that.reflects.an.oauth.accesstoken.word.to.your.momma"
+}
+'''
+
+        httpsServer.respondTo(path('/services/oauth2/token')).withBody(json)
+    }
+
     void stop() {
         httpsServer.stop()
     }
-
 
     String slurpAndEditXml(String path, Closure editClosure) {
         slurpAndEditXml(new ClassPathResource(path).inputStream, editClosure)

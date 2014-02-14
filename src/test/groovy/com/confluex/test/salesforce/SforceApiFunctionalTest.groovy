@@ -230,7 +230,20 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
         assert 'true' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[4]/sf:success', response)
         assert 'false' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[5]/sf:success', response)
         assert 'true' == evalXpath('/env:Envelope/env:Body/sf:upsertResponse/sf:result[6]/sf:success', response)
+    }
 
+    @Test
+    void check_on_logout() {
+        server.sforceApi().logout().matchLogoutRequests()
+
+        String response = postSforce(sforceRequest {
+            'm:logout'(
+                    'xmlns:m':'urn:partner.soap.sforce.com',
+                    'xmlns:sobj':'urn:sobject.partner.soap.sforce.com') {
+            }
+        })
+
+        assert '1' == evalXpath('count(/env:Envelope/env:Body/sf:logoutResponse)', response)
     }
 
     private String postSforce(String request) {

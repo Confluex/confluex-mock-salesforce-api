@@ -1,6 +1,7 @@
 package com.confluex.test.salesforce
 
 import com.sun.jersey.api.client.ClientResponse
+import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import groovy.xml.StreamingMarkupBuilder
 import org.junit.Test
@@ -233,6 +234,34 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
 
     }
 
+	@Test
+	void getUserInfoShouldRespondSuccess() {
+		ClientResponse httpResponse = postSforce(getUserInfoRequest(), ClientResponse)
+		
+		def response = httpResponse.getEntity(String)
+		log.debug("in getUserInfoShouldRespondSuccess, httpResponse = $response")
+		
+		assert 200 == httpResponse.status
+
+		assert 'Thaddeus Rafacz' == evalXpath('/env:Envelope/env:Body/sf:getUserInfoResponse/sf:result/sf:userFullName', response)
+	}
+	
+	@Test
+	void authorizeShouldRespondSuccess() {
+		ClientResponse httpResponse = authorizeSforce(ClientResponse)
+		
+		def response = httpResponse.getEntity(String)
+		log.debug("in authorizeShouldRespondSuccess, httpResponse = $response")
+		
+		assert 200 == httpResponse.status
+		
+		ArrayList props = new JsonSlurper().parseText(response)
+		String propsDump = props.dump()
+		log.debug("in authorizeShouldRespondSuccess, props = $propsDump")
+		
+		assert 'Bearer' == props[0].token_type
+	}
+	
     private String postSforce(String request) {
         postSforce(request, String)
     }
@@ -242,6 +271,13 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
                 .entity(request, 'text/xml; charset=UTF-8')
                 .post(typeToReturn)
     }
+	
+	private <T> T authorizeSforce(Class<T> typeToReturn) {
+		// sslClient.resource().getUriBuilder().queryParam(request, null)
+		sslClient.resource('https://localhost:8090/services/oauth2/authorize?response_type=code&client_id=3MVG9A2kN3Bn17huRvrgRwErKxdF5TY.t6TrcT_eqTBo3LXr5cpdpOGg6CxBEQVDVzJf0sWgm1srocDaHMH8W&immediate=false&state=%3C%3CMULE_EVENT_ID%3D0-ed84f231-e81f-11e3-bf8b-d4bed9318703%3E%3E&display=page&redirect_uri=http%3A%2F%2Flocalhost%3A8081%2Foauthcallback')
+                .get(typeToReturn)
+	}
+	
 
     String updateRequest(Map<String, String> fields) {
         sforceRequest {
@@ -294,5 +330,16 @@ class SforceApiFunctionalTest extends AbstractFunctionalTest {
         root.Body.appendNode(bodyClosure)
         new StreamingMarkupBuilder().bind { mkp.yield root }
     }
+	
+	
+	String getUserInfoRequest() {
+		sforceRequest {
+			'm:getUserInfo'(
+					'xmlns:m':'urn:partner.soap.sforce.com',
+					'xmlns:sobj':'urn:sobject.partner.soap.sforce.com') {
+                'm:queryString' 'query text'
+            }
+		}
+	}
 
 }

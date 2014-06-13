@@ -1,0 +1,31 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+	xmlns="urn:partner.soap.sforce.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<soapenv:Body>
+		<getUserInfoResponse>
+			<result>
+				<accessibilityMode>false</accessibilityMode>
+				<currencySymbol>$</currencySymbol>
+				<orgAttachmentFileSizeLimit>5242880</orgAttachmentFileSizeLimit>
+				<orgDefaultCurrencyIsoCode>USD</orgDefaultCurrencyIsoCode>
+				<orgDisallowHtmlAttachments>false</orgDisallowHtmlAttachments>
+				<orgHasPersonAccounts>false</orgHasPersonAccounts>
+				<organizationId></organizationId>
+				<organizationMultiCurrency>false</organizationMultiCurrency>
+				<organizationName></organizationName>
+				<profileId></profileId>
+				<roleId xsi:nil="true" />
+				<sessionSecondsValid>7200</sessionSecondsValid>
+				<userDefaultCurrencyIsoCode xsi:nil="true" />
+				<userEmail></userEmail>
+				<userFullName></userFullName>
+				<userId></userId>
+				<userLanguage></userLanguage>
+				<userLocale></userLocale>
+				<userName></userName>
+				<userTimeZone></userTimeZone>
+				<userType></userType>
+				<userUiSkin></userUiSkin>
+			</result>
+		</getUserInfoResponse>
+	</soapenv:Body>
+</soapenv:Envelope>

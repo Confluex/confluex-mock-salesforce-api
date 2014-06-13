@@ -1,8 +1,14 @@
 package com.confluex.test.salesforce
 
+import java.io.InputStream;
+
 import com.confluex.mock.http.MockHttpsServer
+
+import groovy.json.JsonSlurper
+import groovy.lang.Closure;
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
+
 import org.springframework.core.io.ClassPathResource
 
 import javax.xml.namespace.QName
@@ -59,6 +65,12 @@ class BaseBuilder {
             }
         }
     }
+	
+	String slurpJson(String path) {
+		String json = new ClassPathResource(path).inputStream.getText()
+		// def root = new JsonSlurper().parseText(json)
+		return json
+	}
 
     def evalXpath(String xpath, String xml, QName resultType) {
         def rootElement = builder.parse(new ByteArrayInputStream(xml.bytes)).documentElement

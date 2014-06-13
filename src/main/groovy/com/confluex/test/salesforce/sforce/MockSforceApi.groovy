@@ -20,6 +20,8 @@ class MockSforceApi {
         update().returnSuccess()
         upsert().returnSuccess()
         query().returnResults()
+		getUserInfo().returnObject()
+		authorize().returnObject()
     }
 
     List<SforceRequest> getRequests(String call) {
@@ -54,6 +56,14 @@ class MockSforceApi {
     MockUpsertBuilder upsert() {
         new MockUpsertBuilder(mockHttpsServer)
     }
+    
+    MockGetUserInfoBuilder getUserInfo() {
+        new MockGetUserInfoBuilder(mockHttpsServer)
+    }
+	
+	MockAuthorizeBuilder authorize() {
+		new MockAuthorizeBuilder(mockHttpsServer)
+	}
 
     private xpath(String xpath, String xml) {
         HttpMatchers.stringHasXPath(xpath).matches(xml)

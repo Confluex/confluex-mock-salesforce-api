@@ -24,7 +24,7 @@ class AbstractFunctionalTest {
 
     @Before
     void initServer() {
-        server = new MockSalesforceApiServer(8090)
+        server = new MockSalesforceApiServer(8081)
     }
 
     @After

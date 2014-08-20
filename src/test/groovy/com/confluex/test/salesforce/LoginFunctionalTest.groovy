@@ -14,7 +14,7 @@ class LoginFunctionalTest extends AbstractFunctionalTest {
         root.Body.login.password = 'yrartibraAPIKEY'
         String request = new StreamingMarkupBuilder().bind { mkp.yield root }
 
-        ClientResponse response = sslClient.resource('https://localhost:8090/services/Soap/u/28.0')
+        ClientResponse response = sslClient.resource('https://localhost:8081/services/Soap/u/28.0')
             .entity(request, 'text/xml; charset=UTF-8')
             .post(ClientResponse.class)
 
@@ -27,13 +27,13 @@ class LoginFunctionalTest extends AbstractFunctionalTest {
 
         URL metadataUrl = new URL(evalXpath('/env:Envelope/env:Body/sf:loginResponse/sf:result/sf:metadataServerUrl', responseBody))
         assert 'localhost' == metadataUrl.host
-        assert 8090 == metadataUrl.port
+        assert 8081 == metadataUrl.port
         assert metadataUrl.path ==~ /${MockSalesforceApiServer.METADATA_PATH_PREFIX}.*/
         assert metadataUrl.path ==~ /.*${MockSalesforceApiServer.DEFAULT_ORG_ID}/
 
         URL serverUrl = new URL(evalXpath('//env:Envelope/env:Body/sf:loginResponse/sf:result/sf:serverUrl', responseBody))
         assert 'localhost' == serverUrl.host
-        assert 8090 == serverUrl.port
+        assert 8081 == serverUrl.port
         assert serverUrl.path ==~ /${MockSalesforceApiServer.PATH_PREFIX}.*/
         assert serverUrl.path ==~ /.*${MockSalesforceApiServer.DEFAULT_ORG_ID}/
     }

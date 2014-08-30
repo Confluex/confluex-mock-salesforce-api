@@ -36,13 +36,17 @@ class MockUpsertBuilder extends BaseBuilder {
                             'sf:upsertResponse' {
                                 ids.eachWithIndex { id, index ->
                                     'sf:result' {
-                                        'sf:id'(id)
+                                        'sf:created'(myResponse.getResult(index).success)
                                         myResponse.getResult(index).errors.each { error ->
                                             'sf:errors' {
                                                 'sf:message'(error.message)
                                                 'sf:statusCode'(error.statusCode)
                                             }
                                         }
+                                        if (myResponse.getResult(index).success)
+                                            'sf:id'(id)
+                                        else
+                                            'sf:id'('xsi:nil': true)
                                         'sf:success'(myResponse.getResult(index).success)
                                     }
                                 }

@@ -3,10 +3,6 @@ package com.confluex.test.salesforce.sforce
 import com.confluex.mock.http.MockHttpsServer
 import com.confluex.mock.http.matchers.HttpMatchers
 
-import javax.xml.namespace.QName
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.xpath.XPathFactory
-
 class MockSforceApi {
     MockHttpsServer mockHttpsServer
 
@@ -16,6 +12,7 @@ class MockSforceApi {
     }
 
     void defaults() {
+        logout()
         retrieve().returnObject()
         update().returnSuccess()
         upsert().returnSuccess()
@@ -67,5 +64,9 @@ class MockSforceApi {
 
     private xpath(String xpath, String xml) {
         HttpMatchers.stringHasXPath(xpath).matches(xml)
+    }
+
+    MockLogoutBuilder logout() {
+      new MockLogoutBuilder(mockHttpsServer)
     }
 }

@@ -27,6 +27,14 @@ class MockSalesforceApiServer {
     private MockSforceApi sforceApi
     private MockStreamingApi streamingApi
 
+    static void main(String[] args) {
+        if (args.length == 1 && args[0].isInteger()) {
+            new MockSalesforceApiServer(args[0].toInteger())
+        } else {
+            throw new IllegalArgumentException("Please pass exactly one numeric parameter for the port number")
+        }
+    }
+
     MockSalesforceApiServer(int port) {
         httpsServer = new MockHttpsServer(port)
         asyncApi = new MockAsyncApi(httpsServer)
